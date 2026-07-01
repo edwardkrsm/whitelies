@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Mindspace · Hoàng Mạnh Dũng</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400&family=JetBrains+Mono:wght@300&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --fD:'Cormorant Garamond',serif;
+  --fB:'DM Sans',sans-serif;
+  --fM:'JetBrains Mono',monospace;
+  --gold:rgba(200,170,110,1);
+  --gold-dim:rgba(180,150,100,.65);
+  --gold-faint:rgba(180,150,100,.22);
+  --blue:rgba(90,150,220,1);
+  --blue-dim:rgba(90,150,220,.55);
+  --blue-faint:rgba(80,130,200,.15);
+  --text-hi:rgba(245,235,210,.92);
+  --text-mid:rgba(220,205,175,.65);
+  --text-lo:rgba(190,175,150,.4);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:#0c0b09;cursor:none}
+
+/* ══════════════════════════════════
+   ANIMATED AURORA BACKGROUND
+   Slow-drifting multi-layer gradient
+   Completely CSS — no JS needed
+══════════════════════════════════ */
+#aurora{
+  position:fixed;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 120% 80% at 20% 110%, rgba(30,18,8,.9) 0%, transparent 60%),
+    radial-gradient(ellipse 100% 70% at 80% -10%,  rgba(8,15,30,.8) 0%, transparent 55%),
+    radial-gradient(ellipse 80%  60% at 50%  50%,  rgba(14,12,8,.6) 0%, transparent 70%),
+    #080706;
+  /* animated aurora layer on top via pseudo */
+}
+#aurora::before{
+  content:'';
+  position:absolute;inset:-40%;
+  background:
+    radial-gradient(ellipse 55% 35% at 30%  40%, rgba(40,22,8,.55)  0%, transparent 55%),
+    radial-gradient(ellipse 45% 30% at 70%  60%, rgba(8,20,45,.45)  0%, transparent 50%),
+    radial-gradient(ellipse 35% 25% at 50%  20%, rgba(18,10,30,.35) 0%, transparent 50%);
+  animation: auroraShift 22s ease-in-out infinite alternate;
+}
+#aurora::after{
+  content:'';
+  position:absolute;inset:-40%;
+  background:
+    radial-gradient(ellipse 40% 28% at 65% 35%, rgba(6,18,38,.4)  0%, transparent 55%),
+    radial-gradient(ellipse 50% 32% at 25% 70%, rgba(35,16,6,.4)  0%, transparent 55%);
+  animation: auroraShift2 30s ease-in-out infinite alternate;
+}
+@keyframes auroraShift{
+  0%  {transform:translate(0,0) rotate(0deg)}
+  33% {transform:translate(3%,2%) rotate(1.5deg)}
+  66% {transform:translate(-2%,3%) rotate(-1deg)}
+  100%{transform:translate(2%,-2%) rotate(2deg)}
+}
+@keyframes auroraShift2{
+  0%  {transform:translate(0,0) rotate(0deg)}
+  40% {transform:translate(-3%,-2%) rotate(-2deg)}
+  80% {transform:translate(2%,3%) rotate(1deg)}
+  100%{transform:translate(-1%,1%) rotate(-1.5deg)}
+}
+
+/* ── CUSTOM CURSOR ── */
+#orb{position:fixed;width:14px;height:14px;border-radius:50%;pointer-events:none;z-index:9999;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(circle,rgba(220,200,160,.95),rgba(180,150,100,.4),transparent 70%);
+  filter:blur(1px);
+  transition:transform .15s,width .4s,height .4s,filter .4s}
+
+/* ── SCENE ── */
+#room{position:fixed;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;
+  perspective:900px;overflow:hidden}
+#room-inner{
+  position:relative;width:100vw;height:100vh;
+  transform-style:preserve-3d;
+  transition:transform .08s ease-out;
+}
+
+/* Room BG — now mostly transparent so aurora shows */
+#room-bg{position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 60% at 42% 44%,rgba(26,21,16,.7) 0%,rgba(14,13,10,.8) 45%,rgba(8,7,10,.9) 100%);
+  transition:background 4s ease}
+
+/* Grain */
+#grain{position:absolute;inset:0;z-index:50;pointer-events:none;opacity:.045;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:180px;animation:grn .6s steps(1) infinite}
+@keyframes grn{0%,100%{background-position:0 0}25%{background-position:-50px 20px}50%{background-position:30px -30px}75%{background-position:-20px -20px}}
+
+/* Vignette */
+#vig{position:absolute;inset:0;z-index:49;pointer-events:none;
+  background:radial-gradient(ellipse 80% 80% at 50% 50%,transparent 20%,rgba(0,0,0,.5) 78%,rgba(0,0,0,.82) 100%);
+  transition:background 3s ease}
+
+/* ── LIGHT SOURCE ── */
+#light{position:absolute;width:700px;height:700px;border-radius:50%;pointer-events:none;z-index:2;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(circle,rgba(200,170,110,.06) 0%,rgba(180,140,80,.025) 40%,transparent 70%);
+  transition:left 1.2s cubic-bezier(.25,.1,.25,1),top 1.2s cubic-bezier(.25,.1,.25,1),background 3s ease;
+  filter:blur(2px)}
+
+/* ── SHADOW ── */
+#shadow{position:absolute;inset:0;pointer-events:none;z-index:3;
+  background:linear-gradient(135deg,rgba(0,0,0,.15) 0%,transparent 60%);
+  transition:background 2s ease,transform 1.8s cubic-bezier(.25,.1,.25,1)}
+
+/* ── FLOOR ── */
+#floor{position:absolute;bottom:0;left:0;right:0;height:38%;
+  background:linear-gradient(180deg,transparent,rgba(0,0,0,.22));z-index:4}
+#floor-line{position:absolute;bottom:37%;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(180,150,100,.08),transparent);z-index:5}
+
+/* ── WALL GRID ── */
+#wallgrid{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:.022;
+  background-image:linear-gradient(rgba(200,180,140,.5) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(200,180,140,.5) 1px,transparent 1px);
+  background-size:72px 72px;
+  transition:opacity 3s ease}
+
+/* ── WINDOW ── */
+#window{position:absolute;right:12%;top:15%;width:140px;height:200px;z-index:6;cursor:pointer}
+#win-frame{position:absolute;inset:0;border:1px solid rgba(200,180,140,.15);
+  background:linear-gradient(160deg,rgba(30,50,80,.28),rgba(10,20,50,.18))}
+#win-frame::before{content:'';position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(200,180,140,.1)}
+#win-frame::after{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:rgba(200,180,140,.1)}
+#win-glow{position:absolute;inset:-8px;background:radial-gradient(ellipse,rgba(80,100,160,.09),transparent 70%);filter:blur(4px)}
+.rain{position:absolute;width:1px;background:linear-gradient(180deg,transparent,rgba(180,200,240,.2),transparent);
+  animation:fall linear infinite}
+@keyframes fall{from{transform:translateY(-100%)}to{transform:translateY(200%)}}
+#win-label{position:absolute;top:calc(100% + 12px);left:50%;transform:translateX(-50%);
+  font-family:var(--fM);font-size:8px;letter-spacing:.25em;text-transform:uppercase;
+  color:rgba(180,160,120,.3);white-space:nowrap;transition:color .4s}
+#window:hover #win-label{color:rgba(180,160,120,.65)}
+
+/* ── CLOCK ── */
+#clock{position:absolute;left:8%;top:20%;z-index:7;width:48px;height:48px;cursor:default}
+#clock-face{position:absolute;inset:0;border-radius:50%;
+  border:1px solid rgba(180,160,120,.15);
+  background:radial-gradient(circle,rgba(20,18,14,.92),rgba(12,11,8,.97))}
+#clock-12,.clock-mark{position:absolute;top:4px;left:50%;transform:translateX(-50%);
+  width:1px;height:4px;background:rgba(180,160,120,.3)}
+.clock-mark{top:auto;bottom:4px}
+.clock-mark-3{top:50%;right:4px;bottom:auto;left:auto;transform:translateY(-50%);height:1px;width:4px}
+.clock-mark-9{top:50%;left:4px;right:auto;bottom:auto;transform:translateY(-50%);height:1px;width:4px}
+#hr-hand{position:absolute;bottom:50%;left:50%;width:1px;height:30%;
+  transform-origin:bottom center;background:rgba(210,190,150,.55);border-radius:1px;transition:transform .6s ease}
+#min-hand{position:absolute;bottom:50%;left:50%;width:1px;height:38%;
+  transform-origin:bottom center;background:rgba(200,180,140,.45);border-radius:1px}
+#sec-hand{position:absolute;bottom:50%;left:50%;width:.5px;height:40%;
+  transform-origin:bottom center;background:rgba(200,110,90,.65);border-radius:1px}
+#clock-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:3px;height:3px;border-radius:50%;background:rgba(210,190,150,.65)}
+
+/* ── ID TAG ── */
+#id-tag{position:absolute;left:6%;bottom:36%;z-index:9;
+  background:rgba(12,10,8,.92);border:1px solid rgba(180,150,100,.18);
+  padding:14px 16px;max-width:190px;opacity:0;transition:opacity .8s ease;
+  backdrop-filter:blur(8px)}
+#id-tag.show{opacity:1}
+#id-tag::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(180,150,100,.4),transparent)}
+.it-name{font-family:var(--fD);font-size:15px;color:rgba(245,235,210,.88);margin-bottom:4px}
+.it-role{font-family:var(--fM);font-size:7px;letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(180,150,100,.55);margin-bottom:12px}
+.it-row{font-family:var(--fM);font-size:9px;color:rgba(200,180,140,.5);line-height:1.8}
+.it-row strong{color:rgba(210,190,150,.8);font-weight:400}
+
+/* Avatar — static image */
+.it-photo{width:100%;aspect-ratio:1;overflow:hidden;position:relative;
+  background:rgba(0,0,0,.4);margin-bottom:10px;border:1px solid rgba(180,150,100,.12)}
+.it-photo img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* ══════════════════════════════════
+   OVERLAY PANELS
+   Glassmorphism: backdrop-filter blur
+   + semi-transparent dark bg
+══════════════════════════════════ */
+.panel{
+  position:fixed;inset:0;z-index:200;overflow-y:auto;
+  opacity:0;pointer-events:none;transition:opacity .9s ease;
+  /* Glass dark base — aurora bleeds through */
+  background:rgba(8,7,9,.82);
+  backdrop-filter:blur(22px) saturate(1.4);
+  -webkit-backdrop-filter:blur(22px) saturate(1.4);
+}
+.panel.open{opacity:1;pointer-events:all}
+
+.panel-inner{max-width:860px;margin:0 auto;padding:80px 52px 120px;
+  position:relative;z-index:2;min-height:100vh}
+
+.panel-grain{position:fixed;inset:0;opacity:.04;pointer-events:none;z-index:1;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:160px;animation:grn .7s steps(1) infinite}
+
+/* Panel close button */
+.panel-back{
+  position:fixed;top:28px;left:36px;z-index:500;
+  font-family:var(--fM);font-size:8px;letter-spacing:.25em;text-transform:uppercase;
+  color:var(--gold-dim);border:1px solid var(--gold-faint);
+  padding:9px 20px;cursor:pointer;
+  background:rgba(8,7,10,.75);backdrop-filter:blur(8px);
+  transition:color .25s,border-color .25s,background .25s}
+.panel-back:hover{
+  color:var(--gold);border-color:rgba(200,170,110,.45);
+  background:rgba(14,12,8,.88)}
+
+/* Panel typography */
+.p-eyebrow{
+  font-family:var(--fM);font-size:8px;letter-spacing:.32em;text-transform:uppercase;
+  color:var(--gold-dim);margin-bottom:18px;
+  opacity:0;animation:fadeUp .7s .1s ease both}
+.p-title{
+  font-family:var(--fD);font-style:italic;font-weight:400;
+  font-size:clamp(40px,6vw,72px);color:var(--text-hi);
+  line-height:.95;margin-bottom:28px;letter-spacing:-.01em;
+  opacity:0;animation:fadeUp .9s .2s ease both}
+.p-rule{
+  width:44px;height:1px;
+  background:linear-gradient(90deg,var(--gold-dim),transparent);
+  margin-bottom:36px;opacity:0;animation:fadeUp .7s .35s ease both}
+
+/* ── NOTEBOOK PANEL ── */
+#panel-notebook .nb-content{
+  font-family:var(--fD);font-style:italic;font-size:18px;
+  color:var(--text-mid);line-height:1.95;
+  border-left:1px solid rgba(180,150,100,.22);padding-left:24px;margin-bottom:44px;
+  opacity:0;animation:fadeUp .9s .5s ease both}
+#panel-notebook .nb-content em{color:var(--gold);font-style:normal}
+
+/* ── SCREEN PANEL (Experiments) ── */
+#panel-screen .mod-list{display:flex;flex-direction:column;gap:1px;background:rgba(180,150,100,.06)}
+
+.mod-row{
+  background:rgba(14,12,9,.85);padding:26px 28px;position:relative;overflow:hidden;
+  transition:background .3s;cursor:default;
+  border-left:2px solid transparent;
+  transition:background .3s, border-color .3s}
+.mod-row:hover{background:rgba(20,17,12,.9);border-left-color:rgba(90,150,220,.4)}
+.mod-row::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;
+  background:linear-gradient(180deg,transparent,rgba(90,150,220,.45),transparent);
+  opacity:0;transition:opacity .3s}
+.mod-row:hover::before{opacity:1}
+
+.mr-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
+.mr-num{font-family:var(--fM);font-size:8px;letter-spacing:.22em;color:var(--blue-dim)}
+.mr-status{
+  font-family:var(--fM);font-size:8px;letter-spacing:.16em;text-transform:uppercase;
+  display:flex;align-items:center;gap:6px;color:rgba(200,225,255,.5)}
+.dot{width:5px;height:5px;border-radius:50%}
+.dot.done{background:#6ab84a;box-shadow:0 0 7px #6ab84a}
+.dot.wip{background:rgba(200,170,100,.6);animation:dp 2s infinite}
+@keyframes dp{0%,100%{opacity:.5}50%{opacity:.15}}
+
+.mr-title{
+  font-family:var(--fD);font-size:24px;font-weight:400;color:var(--text-hi);
+  margin-bottom:6px;letter-spacing:.01em}
+.mr-desc{
+  font-family:var(--fB);font-size:13px;color:var(--text-lo);
+  line-height:1.75;font-weight:300;font-style:italic;margin-bottom:14px}
+.mr-note{
+  font-family:var(--fM);font-size:9px;color:var(--blue-dim);
+  border-left:1px solid rgba(90,150,220,.2);padding-left:8px;
+  margin-bottom:14px;line-height:1.5}
+
+/* ── BUTTONS — clearer interactive states ── */
+.btn-link{
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:var(--fM);font-size:8px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--blue-dim);border:1px solid rgba(90,150,220,.22);
+  padding:8px 16px;text-decoration:none;background:transparent;
+  transition:color .25s, border-color .25s, background .25s, transform .2s;
+  cursor:pointer}
+.btn-link:hover{
+  color:rgba(160,200,255,.9);border-color:rgba(90,150,220,.55);
+  background:rgba(90,150,220,.1);transform:translateY(-1px)}
+.btn-arrow{display:inline-block;transition:transform .3s}
+.btn-link:hover .btn-arrow{transform:translate(3px,-3px)}
+
+/* Gold variant button */
+.btn-gold{
+  color:var(--gold-dim);border-color:rgba(180,150,100,.25)}
+.btn-gold:hover{
+  color:var(--gold);border-color:rgba(200,170,110,.55);
+  background:rgba(180,150,100,.1)}
+
+/* ── FILE DOWNLOAD SECTION ── */
+.files-section{
+  margin-top:2px;
+  border-top:1px solid rgba(90,150,220,.08)}
+.files-header{
+  display:flex;align-items:center;gap:16px;
+  padding:22px 28px 14px;
+  background:rgba(10,9,14,.8)}
+.files-label{
+  font-family:var(--fM);font-size:8px;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--blue-dim)}
+.files-rule{flex:1;height:1px;background:rgba(90,150,220,.1)}
+.files-count{
+  font-family:var(--fM);font-size:8px;letter-spacing:.15em;
+  color:rgba(90,150,220,.3)}
+
+.file-card{
+  display:flex;align-items:center;gap:16px;
+  padding:16px 28px;
+  background:rgba(10,9,14,.7);
+  border-bottom:1px solid rgba(90,150,220,.05);
+  transition:background .25s}
+.file-card:hover{background:rgba(16,14,22,.85)}
+.file-card:last-child{border-bottom:none}
+
+.fc-icon{
+  width:32px;height:32px;border-radius:2px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--fM);font-size:8px;letter-spacing:.06em;
+  flex-shrink:0;border:1px solid}
+.fc-icon.docx{
+  background:rgba(40,90,180,.12);border-color:rgba(60,110,200,.25);
+  color:rgba(100,160,240,.7)}
+.fc-icon.pdf{
+  background:rgba(180,50,50,.12);border-color:rgba(200,70,70,.25);
+  color:rgba(240,120,120,.7)}
+
+.fc-info{flex:1;min-width:0}
+.fc-num{
+  font-family:var(--fM);font-size:8px;letter-spacing:.18em;
+  color:rgba(90,150,220,.4);margin-bottom:3px}
+.fc-name{
+  font-family:var(--fD);font-size:17px;color:var(--text-mid);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  line-height:1.2}
+.fc-sub{
+  font-family:var(--fM);font-size:8px;letter-spacing:.1em;
+  color:var(--text-lo);margin-top:3px}
+
+.fc-actions{display:flex;gap:8px;flex-shrink:0}
+
+/* View in browser button */
+.fc-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--fM);font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;
+  padding:6px 12px;border:1px solid;border-radius:1px;
+  text-decoration:none;transition:all .22s;cursor:pointer;background:transparent}
+.fc-btn.view{
+  color:var(--blue-dim);border-color:rgba(90,150,220,.2)}
+.fc-btn.view:hover{
+  color:rgba(160,200,255,.9);border-color:rgba(90,150,220,.5);
+  background:rgba(90,150,220,.1)}
+.fc-btn.dl{
+  color:var(--gold-dim);border-color:rgba(180,150,100,.2)}
+.fc-btn.dl:hover{
+  color:var(--gold);border-color:rgba(200,170,110,.5);
+  background:rgba(180,150,100,.1)}
+
+/* ── IFRAME MODAL ── */
+#doc-modal{
+  display:none;position:fixed;inset:0;z-index:600;
+  background:rgba(4,4,6,.92);backdrop-filter:blur(24px);
+  align-items:center;justify-content:center;padding:20px}
+#doc-modal.open{display:flex}
+.dm-box{
+  background:rgba(12,10,8,.97);border:1px solid rgba(180,150,100,.15);
+  width:100%;max-width:1000px;max-height:94vh;
+  display:flex;flex-direction:column;position:relative}
+.dm-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 28px;border-bottom:1px solid rgba(180,150,100,.1);
+  flex-shrink:0}
+.dm-title{font-family:var(--fD);font-size:22px;color:var(--text-hi)}
+.dm-close{
+  background:none;border:1px solid rgba(180,150,100,.18);
+  color:var(--gold-dim);font-size:18px;cursor:pointer;
+  padding:4px 12px;transition:all .2s;font-family:var(--fB)}
+.dm-close:hover{color:var(--gold);border-color:rgba(200,170,110,.45);background:rgba(180,150,100,.08)}
+.dm-frame{flex:1;position:relative;height:0;min-height:600px}
+.dm-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:none;display:block}
+.dm-loading{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:12px;
+  background:rgba(10,9,12,.9);font-family:var(--fM);
+  font-size:10px;letter-spacing:.2em;color:var(--gold-dim);
+  transition:opacity .4s}
+.dm-loading.gone{opacity:0;pointer-events:none}
+.dm-spin{
+  width:22px;height:22px;border-radius:50%;
+  border:1.5px solid rgba(180,150,100,.18);
+  border-top-color:var(--gold-dim);
+  animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.dm-foot{
+  display:flex;justify-content:flex-end;gap:10px;
+  padding:14px 28px;border-top:1px solid rgba(180,150,100,.08);
+  flex-shrink:0}
+
+/* ── PAPERS PANEL (reflection) ── */
+#panel-reflect{background:rgba(7,6,10,.82)}
+
+.rfl-intro{
+  font-family:var(--fD);font-style:italic;font-size:clamp(18px,2.5vw,26px);
+  color:rgba(230,215,250,.55);line-height:1.8;max-width:680px;margin-bottom:56px;
+  padding-left:22px;border-left:1px solid rgba(160,110,200,.28);
+  opacity:0;animation:fadeUp .9s .45s ease both}
+.rfl-intro em{color:rgba(175,130,230,.8);font-style:normal}
+
+.frag{
+  background:rgba(14,11,20,.7);padding:32px 30px;position:relative;
+  border-bottom:1px solid rgba(160,110,200,.07);
+  backdrop-filter:blur(6px)}
+.frag::before{content:'';position:absolute;top:0;left:0;width:24px;height:1px;background:rgba(160,110,200,.5)}
+.fg-n{font-family:var(--fM);font-size:8px;letter-spacing:.25em;text-transform:uppercase;
+  color:rgba(160,110,200,.45);margin-bottom:10px}
+.fg-h{font-family:var(--fD);font-size:24px;color:rgba(235,220,255,.82);margin-bottom:12px;line-height:1.2}
+.fg-b{font-family:var(--fB);font-size:13px;color:rgba(195,180,225,.45);
+  line-height:1.9;font-style:italic;font-weight:300}
+.fg-b strong{color:rgba(175,130,230,.75);font-style:normal;font-weight:400}
+
+.skills-wrap{margin-top:44px;padding:36px 32px;
+  background:rgba(10,8,16,.8);border:1px solid rgba(160,110,200,.1);
+  backdrop-filter:blur(8px)}
+.sk-title{font-family:var(--fM);font-size:8px;letter-spacing:.28em;text-transform:uppercase;
+  color:rgba(160,110,200,.45);margin-bottom:24px}
+.sk-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 36px}
+.sk-item{display:flex;flex-direction:column;gap:7px}
+.sk-lb{display:flex;justify-content:space-between;font-family:var(--fM);font-size:9px}
+.sk-lb span{color:rgba(210,195,240,.4)}
+.sk-lb em{color:rgba(175,130,230,.6);font-style:normal}
+.sk-track{height:1px;background:rgba(160,110,200,.1)}
+.sk-fill{height:100%;width:0;background:linear-gradient(90deg,rgba(160,110,200,.4),rgba(190,145,240,.7));
+  transition:width 1.4s cubic-bezier(.22,1,.36,1)}
+.self-assess{margin-top:22px;padding-top:18px;border-top:1px solid rgba(160,110,200,.08);
+  display:flex;align-items:baseline;gap:12px}
+.sa-label{font-family:var(--fM);font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:rgba(160,110,200,.38)}
+.sa-val{font-family:var(--fD);font-style:italic;font-size:32px;color:rgba(175,130,230,.75)}
+
+.pq-wrap{margin-top:1px;padding:52px 56px;
+  background:rgba(8,6,14,.85);text-align:center;position:relative;overflow:hidden;
+  backdrop-filter:blur(8px)}
+.pq-wrap::before{content:'\201C';position:absolute;top:-10px;left:24px;
+  font-family:var(--fD);font-size:120px;color:rgba(160,110,200,.05);line-height:1}
+.pq-wrap blockquote{font-family:var(--fD);font-style:italic;font-size:clamp(18px,2.5vw,26px);
+  color:rgba(230,215,255,.65);line-height:1.6;max-width:620px;margin:0 auto 16px}
+.pq-wrap cite{font-family:var(--fM);font-size:8px;letter-spacing:.25em;color:rgba(160,110,200,.4);text-transform:uppercase}
+.commit-s{display:flex;justify-content:space-between;align-items:center;
+  padding:28px 32px;background:rgba(160,110,200,.03);
+  border:1px solid rgba(160,110,200,.08);margin-top:1px}
+.cs-l{font-family:var(--fD);font-style:italic;font-size:14px;color:rgba(210,195,240,.45)}
+.cs-r{font-family:var(--fM);font-size:8px;letter-spacing:.12em;color:rgba(160,110,200,.4);text-align:right}
+.cs-r strong{display:block;font-size:11px;color:rgba(175,130,230,.65);font-weight:400;margin-bottom:2px}
+
+/* ── LAMP PANEL ── */
+#panel-lamp{background:rgba(8,7,6,.82)}
+
+/* ── DESK OBJECTS ── */
+#desk{position:absolute;bottom:30%;left:50%;transform:translateX(-50%);
+  width:min(700px,84vw);z-index:8}
+#desk-surface{width:100%;height:6px;
+  background:linear-gradient(180deg,rgba(120,90,55,.35),rgba(80,60,35,.25));
+  border-top:1px solid rgba(180,150,100,.15);position:relative}
+#desk-shadow{position:absolute;top:100%;left:5%;right:5%;height:40px;
+  background:linear-gradient(180deg,rgba(0,0,0,.28),transparent);filter:blur(6px)}
+#desk-items{position:absolute;bottom:100%;left:0;right:0;
+  display:flex;align-items:flex-end;justify-content:center;gap:clamp(18px,4vw,60px);
+  padding-bottom:2px}
+
+/* Object base */
+.obj{position:relative;cursor:pointer;transition:transform .4s cubic-bezier(.22,1,.36,1),filter .4s;
+  transform-origin:bottom center}
+.obj:hover{transform:translateY(-6px) scale(1.04);filter:brightness(1.35)}
+.obj-label{
+  position:absolute;top:-28px;left:50%;transform:translateX(-50%);
+  white-space:nowrap;font-family:var(--fM);font-size:8px;letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(200,175,130,.0);transition:color .35s;pointer-events:none}
+.obj:hover .obj-label{color:rgba(200,175,130,.7)}
+
+/* Notebook */
+.notebook-obj{width:54px;height:70px;position:relative}
+.notebook-obj .nb-cover{position:absolute;inset:0;
+  background:linear-gradient(145deg,rgba(65,48,26,.85),rgba(42,28,12,.92));
+  border:1px solid rgba(165,135,82,.18);border-radius:1px 3px 3px 1px}
+.notebook-obj .nb-spine{position:absolute;left:0;top:0;bottom:0;width:5px;
+  background:rgba(82,62,26,.75);border-right:1px solid rgba(165,135,82,.12)}
+.notebook-obj .nb-lines{position:absolute;left:10px;right:4px;top:12px;bottom:10px;
+  display:flex;flex-direction:column;gap:5px;justify-content:center}
+.notebook-obj .nb-line{height:1px;background:rgba(185,165,125,.1);border-radius:1px}
+.notebook-obj .nb-line:nth-child(1){width:80%}
+.notebook-obj .nb-line:nth-child(2){width:65%}
+.notebook-obj .nb-line:nth-child(3){width:75%}
+
+/* Screen */
+.screen-obj{width:80px;height:54px;position:relative}
+.screen-obj .sc-body{position:absolute;inset:0;
+  background:linear-gradient(145deg,rgba(20,25,38,.92),rgba(12,15,24,.97));
+  border:1px solid rgba(85,125,165,.25);border-radius:2px}
+.screen-obj .sc-glow{position:absolute;inset:-4px;
+  background:radial-gradient(ellipse,rgba(60,100,180,.1),transparent 70%);filter:blur(4px)}
+.screen-obj .sc-content{position:absolute;inset:6px;
+  display:flex;flex-direction:column;gap:3px;justify-content:center}
+.screen-obj .sc-bar{height:1px;background:rgba(100,165,230,.2);border-radius:1px}
+.screen-obj .sc-bar:nth-child(2){width:70%;background:rgba(100,165,230,.12)}
+.screen-obj .sc-stand{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);
+  width:20px;height:8px;background:rgba(30,35,48,.65);
+  clip-path:polygon(20% 0,80% 0,100% 100%,0 100%)}
+
+/* Lamp */
+.lamp-obj{width:36px;height:80px;position:relative}
+.lamp-obj .lm-base{position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:22px;height:4px;background:rgba(105,82,52,.55)}
+.lamp-obj .lm-stem{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);
+  width:2px;height:54px;background:rgba(105,82,52,.4)}
+.lamp-obj .lm-arm{position:absolute;bottom:44px;left:50%;width:18px;height:1px;
+  background:rgba(105,82,52,.35);transform-origin:left center;transform:rotate(-30deg)}
+.lamp-obj .lm-head{position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:28px;height:14px;background:rgba(185,155,105,.25);border-radius:14px 14px 0 0;
+  border:1px solid rgba(185,155,105,.18)}
+.lamp-obj .lm-glow{position:absolute;top:14px;left:50%;transform:translateX(-50%);
+  width:65px;height:65px;
+  background:radial-gradient(ellipse,rgba(210,175,105,.15) 0%,transparent 70%);
+  filter:blur(5px);pointer-events:none;animation:lampBreath 4s ease-in-out infinite}
+@keyframes lampBreath{0%,100%{opacity:.65}50%{opacity:1}}
+
+/* Papers */
+.papers-obj{width:64px;height:50px;position:relative}
+.papers-obj .pp{position:absolute;
+  background:rgba(245,238,222,.08);border:1px solid rgba(185,165,125,.12);
+  width:48px;height:62px}
+.papers-obj .pp1{bottom:0;left:0;transform:rotate(-4deg)}
+.papers-obj .pp2{bottom:2px;left:6px;transform:rotate(1deg);background:rgba(245,238,222,.06)}
+.papers-obj .pp3{bottom:0;left:12px;transform:rotate(6deg);background:rgba(245,238,222,.04)}
+
+/* Cup */
+.cup-obj{width:28px;height:38px;position:relative}
+.cup-obj .cup-body{position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:22px;height:30px;
+  background:linear-gradient(145deg,rgba(82,62,42,.55),rgba(52,36,20,.65));
+  border:1px solid rgba(165,135,82,.14);clip-path:polygon(8% 0,92% 0,100% 100%,0 100%)}
+.cup-obj .cup-steam{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);
+  width:8px;height:20px;opacity:.18}
+.cup-obj .cup-steam::before,.cup-obj .cup-steam::after{content:'';position:absolute;
+  width:3px;height:100%;border-radius:50%;
+  border-left:1px solid rgba(225,205,182,.45);animation:steam 2.5s ease-in-out infinite}
+.cup-obj .cup-steam::after{left:5px;animation-delay:-.8s}
+@keyframes steam{0%,100%{transform:translateY(0) scaleX(1);opacity:.4}50%{transform:translateY(-6px) scaleX(1.4);opacity:.1}}
+
+/* Book */
+.book-obj{width:44px;height:58px;position:relative}
+.book-obj .bk-body{position:absolute;inset:0;
+  background:linear-gradient(160deg,rgba(105,32,22,.55),rgba(62,15,8,.72));
+  border:1px solid rgba(185,105,82,.14);border-radius:0 2px 2px 0}
+.book-obj .bk-spine{position:absolute;left:0;top:0;bottom:0;width:6px;
+  background:rgba(125,42,26,.65);border-right:1px solid rgba(185,105,82,.1)}
+.book-obj .bk-title{position:absolute;left:10px;top:50%;transform:translateY(-50%) rotate(90deg);
+  font-family:var(--fM);font-size:6px;letter-spacing:.2em;color:rgba(210,165,135,.28);
+  white-space:nowrap}
+
+/* ── WHISPER TEXT ── */
+#whisper{position:absolute;bottom:18%;left:50%;transform:translateX(-50%);
+  font-family:var(--fD);font-style:italic;font-size:13px;color:rgba(180,160,120,0);
+  white-space:nowrap;z-index:20;transition:color 3s ease;pointer-events:none;
+  text-align:center;letter-spacing:.04em}
+#whisper.show{color:rgba(200,178,138,.28)}
+
+/* ── NAV HINT ── */
+#nav-hint{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  font-family:var(--fM);font-size:8px;letter-spacing:.28em;text-transform:uppercase;
+  color:rgba(195,175,130,.28);z-index:30;transition:opacity .5s;pointer-events:none}
+#nav-hint.hide{opacity:0}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .8s ease,transform .8s ease}
+.reveal.in{opacity:1;transform:translateY(0)}
+
+/* Scrollbar in panels */
+.panel::-webkit-scrollbar{width:3px}
+.panel::-webkit-scrollbar-track{background:transparent}
+.panel::-webkit-scrollbar-thumb{background:rgba(180,150,100,.2);border-radius:2px}
+
+/* Reduced motion */
+@media(prefers-reduced-motion:reduce){
+  #aurora::before,#aurora::after{animation:none}
+  .dm-spin{animation:none}
+}
+</style>
+</head>
+<body>
+
+<!-- AURORA (CSS animated, z-index 0) -->
+<div id="aurora"></div>
+
+<div id="orb"></div>
+
+<!-- ══════════ THE ROOM ══════════ -->
+<div id="room">
+  <div id="room-inner">
+    <div id="room-bg"></div>
+    <div id="wallgrid"></div>
+    <div id="light"></div>
+    <div id="shadow"></div>
+
+    <!-- WINDOW -->
+    <div id="window">
+      <div id="win-glow"></div>
+      <div id="win-frame">
+        <div class="rain" style="left:20%;height:60%;top:10%;animation-duration:1.8s;opacity:.6"></div>
+        <div class="rain" style="left:40%;height:40%;top:20%;animation-duration:2.2s;opacity:.4"></div>
+        <div class="rain" style="left:65%;height:55%;top:5%;animation-duration:1.5s;opacity:.5"></div>
+        <div class="rain" style="left:80%;height:35%;top:30%;animation-duration:2.6s;opacity:.3"></div>
+      </div>
+      <div id="win-label">Bên ngoài</div>
+    </div>
+
+    <!-- CLOCK -->
+    <div id="clock">
+      <div id="clock-face">
+        <div id="clock-12"></div>
+        <div class="clock-mark"></div>
+        <div class="clock-mark clock-mark-3"></div>
+        <div class="clock-mark clock-mark-9"></div>
+        <div id="hr-hand"></div>
+        <div id="min-hand"></div>
+        <div id="sec-hand"></div>
+        <div id="clock-center"></div>
+      </div>
+    </div>
+
+    <!-- ID TAG — static avatar -->
+    <div id="id-tag">
+      <div class="it-photo">
+        <img src="Screenshot 2026-05-08 at 18.32.27.png" alt="Hoàng Mạnh Dũng"/>
+      </div>
+      <div class="it-name">Hoàng Mạnh Dũng</div>
+      <div class="it-role">ULIS · K59 · CNS &amp; AI</div>
+      <div class="it-row">
+        <strong>25040049</strong> · SP. Tiếng Anh<br>
+        Khoa NNVHA · ULIS-VNU
+      </div>
+    </div>
+
+    <!-- FLOOR -->
+    <div id="floor"></div>
+    <div id="floor-line"></div>
+
+    <!-- DESK -->
+    <div id="desk">
+      <div id="desk-items">
+
+        <div class="obj" id="obj-lamp" onclick="openPanel('lamp')">
+          <span class="obj-label">Về tôi</span>
+          <div class="lamp-obj">
+            <div class="lm-head"></div>
+            <div class="lm-arm"></div>
+            <div class="lm-stem"></div>
+            <div class="lm-base"></div>
+            <div class="lm-glow"></div>
+          </div>
+        </div>
+
+        <div class="obj" id="obj-notebook" onclick="openPanel('notebook')">
+          <span class="obj-label">Hành trình</span>
+          <div class="notebook-obj">
+            <div class="nb-spine"></div>
+            <div class="nb-cover"></div>
+            <div class="nb-lines">
+              <div class="nb-line"></div>
+              <div class="nb-line"></div>
+              <div class="nb-line"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="obj" id="obj-screen" onclick="openPanel('screen')">
+          <span class="obj-label">Experiments</span>
+          <div class="screen-obj">
+            <div class="sc-glow"></div>
+            <div class="sc-body">
+              <div class="sc-content">
+                <div class="sc-bar"></div>
+                <div class="sc-bar"></div>
+                <div class="sc-bar"></div>
+              </div>
+            </div>
+            <div class="sc-stand"></div>
+          </div>
+        </div>
+
+        <div class="obj" id="obj-papers" onclick="openPanel('reflect')">
+          <span class="obj-label">Tổng kết</span>
+          <div class="papers-obj">
+            <div class="pp pp1"></div>
+            <div class="pp pp2"></div>
+            <div class="pp pp3"></div>
+          </div>
+        </div>
+
+        <div class="obj" style="pointer-events:none;opacity:.6">
+          <div class="cup-obj">
+            <div class="cup-steam"></div>
+            <div class="cup-body"></div>
+          </div>
+        </div>
+
+        <div class="obj" style="pointer-events:none;opacity:.55">
+          <div class="book-obj">
+            <div class="bk-spine"></div>
+            <div class="bk-body"></div>
+            <div class="bk-title">CNS&amp;AI</div>
+          </div>
+        </div>
+
+      </div>
+      <div id="desk-surface"><div id="desk-shadow"></div></div>
+    </div>
+
+    <div id="whisper">Có điều gì đó quen thuộc ở đây.</div>
+    <div id="grain"></div>
+    <div id="vig"></div>
+  </div>
+</div>
+
+<div id="nav-hint">Nhấp vào đồ vật để khám phá</div>
+
+<!-- ══════════════════════════════════
+     DOCUMENT VIEWER MODAL
+══════════════════════════════════ -->
+<div id="doc-modal" onclick="handleModalOuter(event)">
+  <div class="dm-box">
+    <div class="dm-head">
+      <div class="dm-title" id="dm-title">Tài liệu</div>
+      <button class="dm-close" onclick="closeDocModal()">✕</button>
+    </div>
+    <div class="dm-frame">
+      <div class="dm-loading" id="dm-loading">
+        <div class="dm-spin"></div>
+        <span>Đang tải tài liệu…</span>
+      </div>
+      <iframe id="dm-iframe" title="Document viewer" onload="docLoaded()"></iframe>
+    </div>
+    <div class="dm-foot">
+      <a class="fc-btn dl" id="dm-rawlink" href="#" target="_blank">Tải xuống ↓</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     PANELS
+══════════════════════════════════ -->
+
+<!-- LAMP: Về tôi -->
+<div class="panel" id="panel-lamp">
+  <div class="panel-grain"></div>
+  <button class="panel-back" onclick="closePanel()">← Quay lại</button>
+  <div class="panel-inner">
+    <div class="p-eyebrow">Thư Viện · Mindspace · ULIS 2026</div>
+    <div class="p-title">Hoàng<br>Mạnh Dũng</div>
+    <div class="p-rule"></div>
+    <div style="opacity:0;animation:fadeUp .9s .5s ease both">
+      <p style="font-family:var(--fD);font-style:italic;font-size:18px;color:var(--text-mid);line-height:1.9;border-left:1px solid rgba(180,150,100,.22);padding-left:22px;margin-bottom:40px">
+        Một sinh viên Sư phạm Tiếng Anh tại <span style="color:var(--gold)">ULIS-VNU</span> đang kiến tạo tư duy trong kỷ nguyên trí tuệ nhân tạo. Portfolio này không phải danh sách thành tích — đây là nhật ký tư duy của một hành trình thực sự: từ người dùng thụ động đến người làm chủ công nghệ với ý thức và trách nhiệm.
+      </p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(180,150,100,.08);margin-bottom:32px">
+        <div style="background:rgba(14,12,9,.88);padding:22px 20px;backdrop-filter:blur(4px)">
+          <div style="font-family:var(--fM);font-size:8px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:16px">Thông tin</div>
+          <div style="font-family:var(--fM);font-size:11px;color:var(--text-lo);line-height:2.2">
+            <div>MSSV · <strong style="color:var(--text-mid);font-weight:400">25040049</strong></div>
+            <div>Khoá · <strong style="color:var(--text-mid);font-weight:400">K59</strong></div>
+            <div>Ngành · <strong style="color:var(--text-mid);font-weight:400">Sư phạm Tiếng Anh</strong></div>
+            <div>Khoa · <strong style="color:var(--text-mid);font-weight:400">NNVHA</strong></div>
+            <div>Trường · <strong style="color:var(--text-mid);font-weight:400">ULIS-VNU</strong></div>
+          </div>
+        </div>
+        <div style="background:rgba(12,11,8,.85);padding:22px 20px;backdrop-filter:blur(4px)">
+          <div style="font-family:var(--fM);font-size:8px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:16px">Học phần</div>
+          <div style="font-family:var(--fD);font-style:italic;font-size:22px;color:var(--text-hi);line-height:1.4;margin-bottom:10px">Nhập môn Công nghệ số &amp; AI</div>
+          <div style="font-family:var(--fB);font-size:12px;color:var(--text-lo);line-height:1.7;font-weight:300;font-style:italic">Hành trình 7 module — 7 góc nhìn về con người trong kỷ nguyên số.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px">
+        <button onclick="closePanel();setTimeout(()=>openPanel('notebook'),200)" class="btn-link btn-gold">Xem hành trình <span class="btn-arrow">→</span></button>
+        <button onclick="closePanel();setTimeout(()=>openPanel('screen'),200)" class="btn-link">Xem experiments <span class="btn-arrow">→</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NOTEBOOK: Hành trình -->
+<div class="panel" id="panel-notebook">
+  <div class="panel-grain"></div>
+  <button class="panel-back" onclick="closePanel()">← Quay lại</button>
+  <div class="panel-inner">
+    <div class="p-eyebrow">Nhật ký học tập · Hành trình CNS &amp; AI</div>
+    <div class="p-title">Hành<br><em>trình</em></div>
+    <div class="p-rule"></div>
+    <div class="nb-content">
+      Hành trình bắt đầu từ điều tưởng chừng đơn giản nhất: <em>đặt tên file</em>. Nhưng quản lý tệp khoa học là bài học đầu tiên về tư duy có hệ thống — cách não người sắp xếp thông tin, và cách hệ thống số phản chiếu tư duy đó.
+    </div>
+    <div style="display:flex;flex-direction:column;gap:1px;background:rgba(180,150,100,.05)">
+      <div class="reveal" style="background:rgba(14,12,9,.82);padding:28px 26px;border-left:2px solid rgba(180,150,100,.1);backdrop-filter:blur(4px)">
+        <div style="font-family:var(--fM);font-size:8px;letter-spacing:.25em;color:var(--gold-dim);margin-bottom:10px">Giai đoạn 01 · Module 1–2</div>
+        <div style="font-family:var(--fD);font-size:22px;color:var(--text-hi);margin-bottom:10px;line-height:1.25">Đặt nền móng — Tổ chức &amp; Tư duy phê phán</div>
+        <p style="font-family:var(--fB);font-size:13px;color:var(--text-lo);line-height:1.85;font-weight:300;font-style:italic;margin-bottom:12px">Kỹ năng thẩm định nguồn tin dạy em một điều quan trọng hơn: không phải mọi thông tin có mặt trên internet đều là sự thật, và phân biệt chúng là năng lực cốt lõi của người học trong thời đại số.</p>
+        <span style="font-family:var(--fM);font-size:9px;color:var(--gold-dim);border-left:1px solid rgba(180,150,100,.2);padding-left:8px">→ Nền tảng của mọi kỹ năng số sau này</span>
+      </div>
+      <div class="reveal" style="background:rgba(12,11,8,.78);padding:28px 26px;border-left:2px solid rgba(180,150,100,.07);backdrop-filter:blur(4px)">
+        <div style="font-family:var(--fM);font-size:8px;letter-spacing:.25em;color:var(--gold-dim);margin-bottom:10px">Giai đoạn 02 · Module 3–4</div>
+        <div style="font-family:var(--fD);font-size:22px;color:var(--text-hi);margin-bottom:10px;line-height:1.25">Ngôn ngữ mới — Giao tiếp với máy &amp; người</div>
+        <p style="font-family:var(--fB);font-size:13px;color:var(--text-lo);line-height:1.85;font-weight:300;font-style:italic;margin-bottom:12px">Viết Prompt là ngôn ngữ mới của thế kỷ 21. Module 3 không chỉ dạy cú pháp — nó dạy em cách tư duy rõ ràng hơn. Một Prompt tốt đòi hỏi người viết phải hiểu rõ mình muốn gì, tại sao, và theo cách nào.</p>
+        <span style="font-family:var(--fM);font-size:9px;color:var(--gold-dim);border-left:1px solid rgba(180,150,100,.2);padding-left:8px">→ Giao tiếp là nền tảng của cả giảng dạy lẫn công nghệ</span>
+      </div>
+      <div class="reveal" style="background:rgba(14,12,9,.82);padding:28px 26px;border-left:2px solid rgba(180,150,100,.1);backdrop-filter:blur(4px)">
+        <div style="font-family:var(--fM);font-size:8px;letter-spacing:.25em;color:var(--gold-dim);margin-bottom:10px">Giai đoạn 03 · Module 5–7</div>
+        <div style="font-family:var(--fD);font-size:22px;color:var(--text-hi);margin-bottom:10px;line-height:1.25">Sáng tạo, Trách nhiệm &amp; AI Học liệu</div>
+        <p style="font-family:var(--fB);font-size:13px;color:var(--text-lo);line-height:1.85;font-weight:300;font-style:italic;margin-bottom:12px">Module 6 đặt ra câu hỏi khó hơn: chúng ta sẽ dùng quyền năng đó để làm gì? Module 7 đưa AI vào lớp học — xây dựng học liệu ngoại ngữ thế hệ mới với AI như một cộng sự sư phạm.</p>
+        <span style="font-family:var(--fM);font-size:9px;color:var(--gold-dim);border-left:1px solid rgba(180,150,100,.2);padding-left:8px">→ Kỹ năng mà AI không thể thay thế</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN: Experiments + File Downloads -->
+<div class="panel" id="panel-screen">
+  <div class="panel-grain"></div>
+  <button class="panel-back" onclick="closePanel()">← Quay lại</button>
+  <div class="panel-inner">
+    <div class="p-eyebrow">Màn hình · 07 Experiments</div>
+    <div class="p-title">Kho thực<br><em>nghiệm</em></div>
+    <div class="p-rule"></div>
+
+    <!-- Module list -->
+    <div class="mod-list" style="opacity:0;animation:fadeUp .9s .45s ease both">
+
+      <div class="mod-row">
+        <div class="mr-head"><span class="mr-num">Exp. 01 / 07</span><span class="mr-status"><span class="dot done"></span>Hoàn thành</span></div>
+        <div class="mr-title">Quản lý tệp và thư mục</div>
+        <div class="mr-desc">Xây dựng hệ thống lưu trữ Cloud khoa học, quy tắc đặt tên tệp tin và tối ưu hóa cấu trúc dữ liệu cá nhân.</div>
+        <div class="mr-note">// Tư duy hệ thống bắt đầu từ những quyết định nhỏ nhất.</div>
+        <button class="btn-link" onclick="openDoc('1. ThaoTacTepTin_Professional.docx','Quản lý tệp và thư mục')">Xem bài tập <span class="btn-arrow">↗</span></button>
+      </div>
+
+      <div class="mod-row">
+        <div class="mr-head"><span class="mr-num">Exp. 02 / 07</span><span class="mr-status"><span class="dot done"></span>Hoàn thành</span></div>
+        <div class="mr-title">Tìm kiếm &amp; Đánh giá thông tin</div>
+        <div class="mr-desc">Thẩm định nguồn tin số, lọc nhiễu dữ liệu, xác thực tính học thuật của thông tin.</div>
+        <div class="mr-note">// Không phải mọi kết quả Google đều là sự thật.</div>
+        <button class="btn-link" onclick="openDoc('2. BaoCao_HocThuat_Professional.docx','Tìm kiếm & Đánh giá thông tin')">Xem bài tập <span class="btn-arrow">↗</span></button>
+      </div>
+
+      <div class="mod-row">
+        <div class="mr-head"><span class="mr-num">Exp. 03 / 07</span><span class="mr-status"><span class="dot done"></span>Hoàn thành</span></div>
+        <div class="mr-title">Viết Prompt hiệu quả</div>
+        <div class="mr-desc">Cấu trúc Persona – Task – Context – Format. Ngôn ngữ mới của thế kỷ 21.</div>
+        <div class="mr-note">// Prompt tốt = tư duy tốt được viết ra.</div>
+        <button class="btn-link" onclick="openDoc('3. tmpfhdytd_bao_cao_prompt_engineering_final.docx','Viết Prompt hiệu quả')">Xem bài tập <span class="btn-arrow">↗</span></button>
+      </div>
+
+      <div class="mod-row">
+        <div class="mr-head"><span class="mr-num">Exp. 04 / 07</span><span class="mr-status"><span class="dot done"></span>Hoàn thành</span></div>
+        <div class="mr-title">Hợp tác trực tuyến</div>
+        <div class="mr-desc">Công cụ làm việc nhóm đồng bộ và bất đồng bộ hiệu suất cao trong môi trường số.</div>
+        <div class="mr-note">// Kết nối qua màn hình cần nghệ thuật riêng.</div>
+        <button class="btn-link" onclick="openDoc('4. BaoCaoCaNhan_HoangManhDung_v2.pdf','Hợp tác trực tuyến')">Xem bài tập <span class="btn-arrow">↗</span></button>
+      </div>
+
+      <div class="mod-row">
+        <div class="mr-head"><span class="mr-num">Exp. 05 / 07</span><span class="mr-status"><span class="dot done"></span>Hoàn thành</span></div>
+        <div class="mr-title">Sáng tạo nội dung với AI</div>
+        <div class="mr-desc">Thiết kế hình ảnh, video, bài thuyết trình chuyên nghiệp cùng trí tuệ nhân tạo.</div>
+        <div class="mr-note">// Công cụ thay đổi. Thẩm mỹ thì không.</div>
+        <button class="btn-link" onclick="openDoc('5. tmpx9cojc_baocao_digitalportfolio_v3.docx','Sáng tạo nội dung với AI')">Xem bài tập <span class="btn-arrow">↗</span></button>
+      </div>
+
+      <div class="mod-row">
+        <div class="mr-head"><span class="mr-num">Exp. 06 / 07</span><span class="mr-status"><span class="dot done"></span>Hoàn thành</span></div>
+        <div class="mr-title">AI có trách nhiệm</div>
+        <div class="mr-desc">Đạo đức AI, quyền riêng tư, nguyên tắc sử dụng trí tuệ nhân tạo văn minh, bền vững.</div>
+        <div class="mr-note">// "AI làm được gì?" → "Chúng ta nên làm gì?"</div>
+        <button class="btn-link" onclick="openDoc('6. BaoCao_SuDungAI_CoTrachNhiem.docx','AI có trách nhiệm')">Xem bài tập <span class="btn-arrow">↗</span></button>
+      </div>
+
+      <div class="mod-row">
+        <div class="mr-head"><span class="mr-num">Exp. 07 / 07</span><span class="mr-status"><span class="dot done"></span>Hoàn thành</span></div>
+        <div class="mr-title">AI trong học liệu Ngoại ngữ</div>
+        <div class="mr-desc">Ứng dụng AI xây dựng học liệu tiếng Anh cá nhân hóa, tối ưu hóa cho thế hệ giáo viên mới.</div>
+        <div class="mr-note">// AI + ELT = lớp học không có giới hạn.</div>
+        <button class="btn-link" onclick="openDoc('7. BaoCao_AI_HocLieu_NgoaiNgu.docx','AI trong học liệu Ngoại ngữ')">Xem bài tập <span class="btn-arrow">↗</span></button>
+      </div>
+
+    </div><!-- /mod-list -->
+
+    <!-- ── FILE DOWNLOAD CARDS ── -->
+    <div class="files-section" style="opacity:0;animation:fadeUp .9s .7s ease both">
+      <div class="files-header">
+        <span class="files-label">Tải xuống tài liệu</span>
+        <span class="files-rule"></span>
+        <span class="files-count">07 files</span>
+      </div>
+
+      <div class="file-card">
+        <div class="fc-icon docx">DOCX</div>
+        <div class="fc-info">
+          <div class="fc-num">Bài 01</div>
+          <div class="fc-name">Quản lý tệp và thư mục</div>
+          <div class="fc-sub">ThaoTacTepTin_Professional.docx</div>
+        </div>
+        <div class="fc-actions">
+          <button class="fc-btn view" onclick="openDoc('1. ThaoTacTepTin_Professional.docx','Quản lý tệp và thư mục')">Xem ↗</button>
+          <a class="fc-btn dl" href="https://raw.githubusercontent.com/edwardkrsm/romanticization/main/1.%20ThaoTacTepTin_Professional.docx" target="_blank" download>Tải ↓</a>
+        </div>
+      </div>
+
+      <div class="file-card">
+        <div class="fc-icon docx">DOCX</div>
+        <div class="fc-info">
+          <div class="fc-num">Bài 02</div>
+          <div class="fc-name">Tìm kiếm &amp; Đánh giá thông tin</div>
+          <div class="fc-sub">BaoCao_HocThuat_Professional.docx</div>
+        </div>
+        <div class="fc-actions">
+          <button class="fc-btn view" onclick="openDoc('2. BaoCao_HocThuat_Professional.docx','Tìm kiếm & Đánh giá thông tin')">Xem ↗</button>
+          <a class="fc-btn dl" href="https://raw.githubusercontent.com/edwardkrsm/romanticization/main/2.%20BaoCao_HocThuat_Professional.docx" target="_blank" download>Tải ↓</a>
+        </div>
+      </div>
+
+      <div class="file-card">
+        <div class="fc-icon docx">DOCX</div>
+        <div class="fc-info">
+          <div class="fc-num">Bài 03</div>
+          <div class="fc-name">Viết Prompt hiệu quả</div>
+          <div class="fc-sub">tmpfhdytd_bao_cao_prompt_engineering_final.docx</div>
+        </div>
+        <div class="fc-actions">
+          <button class="fc-btn view" onclick="openDoc('3. tmpfhdytd_bao_cao_prompt_engineering_final.docx','Viết Prompt hiệu quả')">Xem ↗</button>
+          <a class="fc-btn dl" href="https://raw.githubusercontent.com/edwardkrsm/romanticization/main/3.%20tmpfhdytd_bao_cao_prompt_engineering_final.docx" target="_blank" download>Tải ↓</a>
+        </div>
+      </div>
+
+      <div class="file-card">
+        <div class="fc-icon pdf">PDF</div>
+        <div class="fc-info">
+          <div class="fc-num">Bài 04</div>
+          <div class="fc-name">Hợp tác trực tuyến</div>
+          <div class="fc-sub">BaoCaoCaNhan_HoangManhDung_v2.pdf</div>
+        </div>
+        <div class="fc-actions">
+          <button class="fc-btn view" onclick="openDoc('4. BaoCaoCaNhan_HoangManhDung_v2.pdf','Hợp tác trực tuyến')">Xem ↗</button>
+          <a class="fc-btn dl" href="https://raw.githubusercontent.com/edwardkrsm/romanticization/main/4.%20BaoCaoCaNhan_HoangManhDung_v2.pdf" target="_blank" download>Tải ↓</a>
+        </div>
+      </div>
+
+      <div class="file-card">
+        <div class="fc-icon docx">DOCX</div>
+        <div class="fc-info">
+          <div class="fc-num">Bài 05</div>
+          <div class="fc-name">Sáng tạo nội dung với AI</div>
+          <div class="fc-sub">tmpx9cojc_baocao_digitalportfolio_v3.docx</div>
+        </div>
+        <div class="fc-actions">
+          <button class="fc-btn view" onclick="openDoc('5. tmpx9cojc_baocao_digitalportfolio_v3.docx','Sáng tạo nội dung với AI')">Xem ↗</button>
+          <a class="fc-btn dl" href="https://raw.githubusercontent.com/edwardkrsm/romanticization/main/5.%20tmpx9cojc_baocao_digitalportfolio_v3.docx" target="_blank" download>Tải ↓</a>
+        </div>
+      </div>
+
+      <div class="file-card">
+        <div class="fc-icon docx">DOCX</div>
+        <div class="fc-info">
+          <div class="fc-num">Bài 06</div>
+          <div class="fc-name">AI có trách nhiệm</div>
+          <div class="fc-sub">BaoCao_SuDungAI_CoTrachNhiem.docx</div>
+        </div>
+        <div class="fc-actions">
+          <button class="fc-btn view" onclick="openDoc('6. BaoCao_SuDungAI_CoTrachNhiem.docx','AI có trách nhiệm')">Xem ↗</button>
+          <a class="fc-btn dl" href="https://raw.githubusercontent.com/edwardkrsm/romanticization/main/6.%20BaoCao_SuDungAI_CoTrachNhiem.docx" target="_blank" download>Tải ↓</a>
+        </div>
+      </div>
+
+      <div class="file-card">
+        <div class="fc-icon docx">DOCX</div>
+        <div class="fc-info">
+          <div class="fc-num">Bài 07</div>
+          <div class="fc-name">AI trong học liệu Ngoại ngữ</div>
+          <div class="fc-sub">BaoCao_AI_HocLieu_NgoaiNgu.docx</div>
+        </div>
+        <div class="fc-actions">
+          <button class="fc-btn view" onclick="openDoc('7. BaoCao_AI_HocLieu_NgoaiNgu.docx','AI trong học liệu Ngoại ngữ')">Xem ↗</button>
+          <a class="fc-btn dl" href="https://raw.githubusercontent.com/edwardkrsm/romanticization/main/7.%20BaoCao_AI_HocLieu_NgoaiNgu.docx" target="_blank" download>Tải ↓</a>
+        </div>
+      </div>
+
+    </div><!-- /files-section -->
+  </div><!-- /panel-inner -->
+</div><!-- /panel-screen -->
+
+<!-- PAPERS: Reflection -->
+<div class="panel" id="panel-reflect">
+  <div class="panel-grain"></div>
+  <button class="panel-back" onclick="closePanel()">← Quay lại</button>
+  <div class="panel-inner">
+    <div class="p-eyebrow">Những trang giấy · Tổng kết</div>
+    <div class="p-title">Nhìn lại<br><em>từ bên trong</em></div>
+    <div class="p-rule"></div>
+    <p class="rfl-intro">
+      Học phần này không dạy em dùng công cụ. Nó dạy em <em>đặt câu hỏi khác đi</em>. Thay vì "AI làm được gì?", em bắt đầu hỏi "Tôi muốn tạo ra điều gì và tôi cần tư duy như thế nào để thực sự làm chủ nó?"
+    </p>
+    <div style="display:flex;flex-direction:column;gap:1px">
+      <div class="frag reveal">
+        <div class="fg-n">Fragment · 01 · Chuyển đổi</div>
+        <div class="fg-h">Khi tôi ngừng là người dùng</div>
+        <p class="fg-b">Trước học phần này, em dùng công nghệ như đi xe đạp — lên và đạp. Sau 7 module, em nhận ra <strong>làm chủ có nghĩa là biết khi nào nên dừng, khi nào nên chọn đường khác</strong>. Không phải dùng tất cả — mà là hiểu mình đang làm gì và tại sao.</p>
+      </div>
+      <div class="frag reveal">
+        <div class="fg-n">Fragment · 02 · Khám phá</div>
+        <div class="fg-h">AI như tấm gương</div>
+        <p class="fg-b">Viết Prompt dạy em sự thật rằng AI phản chiếu <strong>chất lượng tư duy của người dùng</strong>. Câu hỏi mơ hồ → câu trả lời mơ hồ. Câu hỏi sắc bén → câu trả lời sắc bén. Học cách viết Prompt là học cách tư duy rõ ràng hơn về bất kỳ điều gì.</p>
+      </div>
+      <div class="frag reveal">
+        <div class="fg-n">Fragment · 03 · Trách nhiệm</div>
+        <div class="fg-h">Giáo viên trong kỷ nguyên AI</div>
+        <p class="fg-b">Trong lớp học tương lai, em sẽ đứng trước những học sinh lớn lên cùng AI — chưa hiểu ranh giới giữa thông tin và <strong>sự thật được tạo ra</strong>. Người thầy thế hệ mới không chỉ dạy kiến thức; họ dạy cách sống có đạo đức trong thế giới số.</p>
+      </div>
+    </div>
+    <div class="skills-wrap reveal">
+      <div class="sk-title">Khung kỹ năng · Self-assessment</div>
+      <div class="sk-grid">
+        <div class="sk-item"><div class="sk-lb"><span>Quản lý dữ liệu số</span><em>88%</em></div><div class="sk-track"><div class="sk-fill" data-w="88"></div></div></div>
+        <div class="sk-item"><div class="sk-lb"><span>Thẩm định thông tin</span><em>75%</em></div><div class="sk-track"><div class="sk-fill" data-w="75"></div></div></div>
+        <div class="sk-item"><div class="sk-lb"><span>Viết Prompt AI</span><em>80%</em></div><div class="sk-track"><div class="sk-fill" data-w="80"></div></div></div>
+        <div class="sk-item"><div class="sk-lb"><span>Hợp tác trực tuyến</span><em>72%</em></div><div class="sk-track"><div class="sk-fill" data-w="72"></div></div></div>
+        <div class="sk-item"><div class="sk-lb"><span>Sáng tạo với AI</span><em>78%</em></div><div class="sk-track"><div class="sk-fill" data-w="78"></div></div></div>
+        <div class="sk-item"><div class="sk-lb"><span>Tư duy đạo đức số</span><em>85%</em></div><div class="sk-track"><div class="sk-fill" data-w="85"></div></div></div>
+        <div class="sk-item"><div class="sk-lb"><span>AI Học liệu ELT</span><em>74%</em></div><div class="sk-track"><div class="sk-fill" data-w="74"></div></div></div>
+      </div>
+      <div class="self-assess"><span class="sa-label">Tự đánh giá</span><span class="sa-val">Tốt</span></div>
+    </div>
+    <div class="pq-wrap reveal">
+      <blockquote>Trí tuệ nhân tạo mạnh nhất không phải là AI giỏi nhất — mà là con người biết dùng AI một cách khôn ngoan, có lương tâm và có mục đích.</blockquote>
+      <cite>Hoàng Mạnh Dũng · ULIS K59 · 2026</cite>
+    </div>
+    <div class="commit-s reveal">
+      <p class="cs-l">Cam kết học tập, phát triển và sử dụng AI có trách nhiệm.</p>
+      <div class="cs-r"><strong>Hoàng Mạnh Dũng</strong>25040049 · K59 · ULIS-VNU</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── File URL helpers ── */
+const GH   = 'https://raw.githubusercontent.com/edwardkrsm/romanticization/main/';
+const MSOV = 'https://view.officeapps.live.com/op/embed.aspx?src=';
+
+function viewerUrl(filename){
+  const raw = GH + encodeURIComponent(filename);
+  return filename.endsWith('.pdf')
+    ? raw
+    : MSOV + encodeURIComponent(GH + filename);
+}
+function rawUrl(filename){
+  return GH + encodeURIComponent(filename);
+}
+
+/* ── Document modal ── */
+function openDoc(filename, title){
+  const modal = document.getElementById('doc-modal');
+  document.getElementById('dm-title').textContent = title;
+  const iframe = document.getElementById('dm-iframe');
+  const loading = document.getElementById('dm-loading');
+  loading.classList.remove('gone');
+  iframe.src = viewerUrl(filename);
+  document.getElementById('dm-rawlink').href = rawUrl(filename);
+  modal.classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeDocModal(){
+  const modal = document.getElementById('doc-modal');
+  modal.classList.remove('open');
+  document.getElementById('dm-iframe').src = '';
+  document.body.style.overflow='';
+}
+function docLoaded(){
+  document.getElementById('dm-loading').classList.add('gone');
+}
+function handleModalOuter(e){
+  if(e.target === e.currentTarget) closeDocModal();
+}
+document.addEventListener('keydown', e => {
+  if(e.key==='Escape'){
+    closeDocModal();
+    closePanel();
+  }
+});
+
+/* ── CURSOR ── */
+const orb = document.getElementById('orb');
+let mx = innerWidth/2, my = innerHeight/2;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  orb.style.left = mx+'px'; orb.style.top = my+'px';
+});
+document.addEventListener('mousedown', () => {
+  orb.style.width='22px'; orb.style.height='22px'; orb.style.filter='blur(2px)';
+});
+document.addEventListener('mouseup', () => {
+  orb.style.width='14px'; orb.style.height='14px'; orb.style.filter='blur(1px)';
+});
+
+/* ── LIGHT FOLLOWS CURSOR ── */
+const light = document.getElementById('light');
+let tlx = innerWidth/2, tly = innerHeight/2;
+function updateLight(){
+  tlx += (mx-tlx)*.035; tly += (my-tly)*.035;
+  light.style.left = tlx+'px'; light.style.top = tly+'px';
+  requestAnimationFrame(updateLight);
+}
+updateLight();
+
+/* ── ROOM TILT ── */
+const ri = document.getElementById('room-inner');
+const shadow = document.getElementById('shadow');
+let trx = 0, try_ = 0;
+function updateRoom(){
+  const tx = ((mx/innerWidth)-.5)*10;
+  const ty = ((my/innerHeight)-.5)*6;
+  trx += (tx-trx)*.04; try_ += (ty-try_)*.04;
+  ri.style.transform = `rotateY(${trx}deg) rotateX(${-try_}deg)`;
+  shadow.style.transform = `translate(${trx*.5}px,${try_*.35}px)`;
+  requestAnimationFrame(updateRoom);
+}
+updateRoom();
+
+/* ── STILLNESS / BREATHING ── */
+let lastMove = Date.now(), isStill = false;
+const bg = document.getElementById('room-bg');
+const vig = document.getElementById('vig');
+const wg  = document.getElementById('wallgrid');
+
+document.addEventListener('mousemove', () => {
+  lastMove = Date.now();
+  if(isStill){ isStill = false; returnToLife(); }
+});
+setInterval(() => {
+  if(Date.now()-lastMove > 5000 && !isStill && !currentPanel){
+    isStill = true; sinkIntoStillness();
+    setTimeout(() => { if(isStill) showWhisper(); }, 3000);
+  }
+}, 1000);
+function sinkIntoStillness(){
+  bg.style.background  = 'radial-gradient(ellipse 70% 60% at 42% 44%,rgba(15,13,8,.85) 0%,rgba(8,7,6,.9) 45%,rgba(5,4,7,.95) 100%)';
+  vig.style.background = 'radial-gradient(ellipse 80% 80% at 50% 50%,transparent 15%,rgba(0,0,0,.72) 75%,rgba(0,0,0,.93) 100%)';
+  wg.style.opacity = '.008';
+}
+function returnToLife(){
+  bg.style.background  = 'radial-gradient(ellipse 70% 60% at 42% 44%,rgba(26,21,16,.7) 0%,rgba(14,13,10,.8) 45%,rgba(8,7,10,.9) 100%)';
+  vig.style.background = 'radial-gradient(ellipse 80% 80% at 50% 50%,transparent 20%,rgba(0,0,0,.5) 78%,rgba(0,0,0,.82) 100%)';
+  wg.style.opacity = '.022';
+  hideWhisper();
+}
+
+const whisper = document.getElementById('whisper');
+const whisperTexts = [
+  "Có điều gì đó quen thuộc ở đây.",
+  "Bạn đã từng ở đây trước đây.",
+  "Ánh đèn này... dường như quen.",
+  "Đứng yên đủ lâu, phòng sẽ nói chuyện."
+];
+let wi = 0;
+function showWhisper(){ whisper.textContent = whisperTexts[wi%whisperTexts.length]; wi++; whisper.classList.add('show'); }
+function hideWhisper(){ whisper.classList.remove('show'); }
+
+/* ── ID TAG ── */
+setTimeout(() => document.getElementById('id-tag').classList.add('show'), 1500);
+
+/* ── CLOCK (anomalous) ── */
+let cSec = Math.floor(Math.random()*60);
+let cMin = Math.floor(Math.random()*60);
+let cHr  = Math.floor(Math.random()*12);
+function setClock(){
+  const sr = cSec*6;
+  const mr = cMin*6 + (cSec/10);
+  const hr = cHr*30 + (cMin*.5);
+  document.getElementById('sec-hand').style.transform = `translateX(-50%) rotate(${sr}deg)`;
+  document.getElementById('min-hand').style.transform = `translateX(-50%) rotate(${mr}deg)`;
+  document.getElementById('hr-hand').style.transform  = `translateX(-50%) rotate(${hr}deg)`;
+}
+setClock();
+function tickClock(){
+  const r = Math.random();
+  if(r < .08){ cSec += 2; }
+  else if(r < .12){ cSec = Math.max(0, cSec-1); }
+  else { cSec++; }
+  if(cSec >= 60){ cSec=0; cMin++; if(cMin>=60){ cMin=0; cHr=(cHr+1)%12; } }
+  setClock();
+  setTimeout(tickClock, Math.random()<.1 ? 1800+Math.random()*600 : 800+Math.random()*400);
+}
+tickClock();
+
+/* ── PANELS ── */
+let currentPanel = null;
+function openPanel(id){
+  if(currentPanel) document.getElementById('panel-'+currentPanel).classList.remove('open');
+  currentPanel = id;
+  const p = document.getElementById('panel-'+id);
+  p.classList.add('open');
+  document.getElementById('nav-hint').classList.add('hide');
+  setTimeout(() => {
+    p.querySelectorAll('.reveal').forEach((el,i) => {
+      setTimeout(() => el.classList.add('in'), i*90+400);
+    });
+    if(id==='reflect'){
+      setTimeout(() => {
+        p.querySelectorAll('.sk-fill').forEach(b => b.style.width = b.dataset.w+'%');
+      }, 900);
+    }
+  }, 200);
+}
+function closePanel(){
+  if(!currentPanel) return;
+  const p = document.getElementById('panel-'+currentPanel);
+  p.classList.remove('open');
+  p.querySelectorAll('.reveal').forEach(el => el.classList.remove('in'));
+  p.querySelectorAll('.sk-fill').forEach(b => b.style.width='0');
+  currentPanel = null;
+  document.getElementById('nav-hint').classList.remove('hide');
+}
+
+/* ── OBJECT hover: warm light ── */
+document.querySelectorAll('.obj').forEach(obj => {
+  obj.addEventListener('mouseenter', () => {
+    light.style.background = 'radial-gradient(circle,rgba(225,185,115,.1) 0%,rgba(185,145,82,.04) 35%,transparent 65%)';
+  });
+  obj.addEventListener('mouseleave', () => {
+    light.style.background = 'radial-gradient(circle,rgba(200,170,110,.06) 0%,rgba(180,140,80,.025) 40%,transparent 70%)';
+  });
+});
+
+/* ── MAGNETIC BUTTONS ── */
+document.querySelectorAll('.btn-link, .fc-btn').forEach(btn => {
+  btn.addEventListener('mousemove', e => {
+    const r = btn.getBoundingClientRect();
+    btn.style.transform = `translate(${(e.clientX-r.left-r.width/2)*.18}px,${(e.clientY-r.top-r.height/2)*.18}px)`;
+  });
+  btn.addEventListener('mouseleave', () => btn.style.transform='');
+});
+
+/* ── SCROLL REVEAL in panels ── */
+const obs = new IntersectionObserver(entries => {
+  entries.forEach((en,i) => {
+    if(en.isIntersecting){
+      en.target.style.transitionDelay = (i*.08)+'s';
+      en.target.classList.add('in');
+    }
+  });
+}, {threshold:.1});
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
